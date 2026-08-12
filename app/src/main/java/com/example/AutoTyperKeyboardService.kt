@@ -58,15 +58,15 @@ class AutoTyperKeyboardService : InputMethodService(),
 
     override fun onCreate() {
         super.onCreate()
+        savedStateRegistryController.performAttach()
         savedStateRegistryController.performRestore(null)
         lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_CREATE)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
+        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
         settingsManager = SettingsManager(this)
     }
 
     override fun onCreateInputView(): View {
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_START)
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_RESUME)
-
         val composeView = ComposeView(this).apply {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindowOrReleasedFromPool)
             setViewTreeLifecycleOwner(this@AutoTyperKeyboardService)
@@ -104,9 +104,13 @@ class AutoTyperKeyboardService : InputMethodService(),
 
     override fun onDestroy() {
         typingEngine.stopTyping()
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
-        lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        if (lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_PAUSE)
+            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_STOP)
+        }
+        if (lifecycleRegistry.currentState.isAtLeast(Lifecycle.State.CREATED)) {
+            lifecycleRegistry.handleLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+        }
         store.clear()
         super.onDestroy()
     }
@@ -229,7 +233,7 @@ fun AutoTyperKeyboardContent(
 
                     // Progress Bar
                     LinearProgressIndicator(
-                        progress = { progressPercentage.coerceIn(0f, 1f) },
+                        progress = progressPercentage.coerceIn(0f, 1f),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(6.dp)
