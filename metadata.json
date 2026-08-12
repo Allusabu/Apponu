@@ -1,0 +1,6 @@
+{
+  "name": "AutoTyper Keyboard",
+  "description": "AutoTyper Keyboard - Real Android custom IME keyboard that auto-types saved text with adjustable speeds, typo simulation, and random human-like pauses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
